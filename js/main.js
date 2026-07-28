@@ -91,6 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!prefersReducedMotion) {
         initTiltEffect();
     }
+
+    // 9. PREMIUM HERO AURORA
+    if (!prefersReducedMotion) {
+        initHeroAurora();
+    }
 });
 
 // Dynamic Premium Background Initializer
@@ -279,4 +284,22 @@ function initTiltEffect() {
             target.style.boxShadow = '0 15px 35px -10px rgba(59, 130, 246, 0.25), 0 5px 15px -5px rgba(139, 92, 246, 0.2)';
         });
     });
+}
+
+// Hero Aurora Background Initializer
+function initHeroAurora() {
+    const hero = document.querySelector('.hero-wrapper');
+    if (!hero) return;
+
+    const auroraContainer = document.createElement('div');
+    auroraContainer.className = 'hero-aurora-bg';
+
+    const blobs = ['aurora-1', 'aurora-2', 'aurora-3'];
+    blobs.forEach(b => {
+        const blob = document.createElement('div');
+        blob.className = `aurora-blob ${b}`;
+        auroraContainer.appendChild(blob);
+    });
+
+    hero.appendChild(auroraContainer);
 }

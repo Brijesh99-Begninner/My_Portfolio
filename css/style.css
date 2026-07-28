@@ -495,7 +495,9 @@ footer {
     width: 320px;
     height: 390px;
     border-radius: 20px;
-    background: var(--bg-card);
+    background: rgba(30, 41, 59, 0.88); /* Semi-transparent glass but opaque enough to block text-overlay bleed */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
     padding: 1.8rem;
     box-shadow: var(--shadow-card);
@@ -507,6 +509,11 @@ footer {
     overflow: hidden;
 }
 
+.deck-card > * {
+    position: relative;
+    z-index: 2; /* Ensures text is rendering above the gradient overlay */
+}
+
 .deck-card::after {
     content: '';
     position: absolute;
@@ -514,6 +521,7 @@ footer {
     background: linear-gradient(to top, var(--bg-secondary), transparent 75%);
     pointer-events: none;
     transition: background-color var(--transition-normal);
+    z-index: 1; /* Below text contents */
 }
 
 .deck-card-title {
@@ -529,21 +537,21 @@ footer {
     margin-top: 0.5rem;
 }
 
-/* Card Stack Placements */
+/* Card Stack Placements - Spread slightly more to expose underlying card boundaries */
 .card-about {
-    transform: rotate(-6deg) translateX(-20px) translateZ(-40px);
+    transform: rotate(-6deg) translateX(-35px) translateY(-5px) translateZ(-20px);
     z-index: 3;
 }
 .card-academics {
-    transform: rotate(2deg) translateY(-10px) translateX(10px) translateZ(-20px);
+    transform: rotate(2deg) translateY(-15px) translateX(5px) translateZ(-10px);
     z-index: 2;
 }
 .card-experience {
-    transform: rotate(8deg) translateX(40px) translateY(10px) translateZ(0px);
+    transform: rotate(8deg) translateX(45px) translateY(10px) translateZ(0px);
     z-index: 1;
 }
 
-/* Hover Stack Expansions */
+/* Hover Stack Expansions - Safe desktop translations */
 .hero-deck:hover .card-about {
     transform: rotate(-12deg) translateX(-110px) translateY(-20px) translateZ(10px);
 }
@@ -1490,7 +1498,80 @@ textarea.form-input {
     width: 100%;
     height: 100%;
     pointer-events: none;
+    z-index: 1; /* just above aurora */
+}
+
+/* HERO AURORA BACKGROUND */
+.hero-wrapper {
+    position: relative;
+    overflow: visible; /* allows deck cards fanning without getting cut off from sides */
+}
+
+.hero-content, .hero-deck {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-aurora-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
     z-index: 0;
+    overflow: hidden;
+    opacity: 0.10; /* exactly 10% opacity, within 8-12% target */
+    mix-blend-mode: screen;
+}
+
+.aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    mix-blend-mode: screen;
+    animation: auroraFlow 20s infinite alternate ease-in-out;
+}
+
+.aurora-1 {
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, #3B82F6 0%, transparent 70%);
+    top: -10%;
+    left: -10%;
+    animation-duration: 25s;
+}
+
+.aurora-2 {
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(circle, #8B5CF6 0%, transparent 70%);
+    bottom: -20%;
+    right: -10%;
+    animation-duration: 35s;
+    animation-delay: -5s;
+}
+
+.aurora-3 {
+    width: 50%;
+    height: 50%;
+    background: radial-gradient(circle, #22D3EE 0%, transparent 70%);
+    top: 20%;
+    left: 40%;
+    animation-duration: 28s;
+    animation-delay: -10s;
+}
+
+@keyframes auroraFlow {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+    33% {
+        transform: translate(12%, -8%) scale(1.15) rotate(120deg);
+    }
+    66% {
+        transform: translate(-8%, 12%) scale(0.85) rotate(240deg);
+    }
+    100% {
+        transform: translate(4%, -4%) scale(1.05) rotate(360deg);
+    }
 }
 
 /* ACCESSIBILITY: REDUCED MOTION OVERRIDES */
@@ -1514,7 +1595,7 @@ textarea.form-input {
         transform: none !important;
         box-shadow: 0 15px 35px -10px rgba(59, 130, 246, 0.25) !important;
     }
-    .bg-blob {
+    .bg-blob, .aurora-blob {
         animation: none !important;
         display: none !important;
     }
