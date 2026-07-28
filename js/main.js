@@ -1,16 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. DYNAMIC DEVELOPER BACKGROUND CANVAS
-    initBackgroundCanvas();
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // 1. PREMIUM DYNAMIC BACKGROUND SYSTEM (GRID, NOISE, BLOBS, SPOTLIGHT)
+    initPremiumBackgrounds(prefersReducedMotion);
 
     // 2. NAVBAR SCROLL EFFECT
     const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-    });
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    }
 
     // 3. MOBILE NAV DRAWER TOGGLE
     const mobileNavToggle = document.getElementById('mobile-nav-toggle');
@@ -72,65 +76,207 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // 6. SCROLL REVEAL (FADE-IN & SLIDE-UP ANIMATIONS)
+    if (!prefersReducedMotion) {
+        initScrollReveal();
+    }
+
+    // 7. HERO FLOOR PARTICLES (HOMEPAGE HERO SECTION)
+    if (!prefersReducedMotion) {
+        initHeroParticles();
+    }
+
+    // 8. 3D CARD TILT ON ABOUT PROFILE IMAGE
+    if (!prefersReducedMotion) {
+        initTiltEffect();
+    }
 });
 
-// Dynamic Developer Background Canvas Initializer
-function initBackgroundCanvas() {
-    // Prevent double creation if loaded twice
-    if (document.getElementById('code-bg-canvas')) return;
+// Dynamic Premium Background Initializer
+function initPremiumBackgrounds(prefersReducedMotion) {
+    // 1. Dotted pattern layer
+    const grid = document.createElement('div');
+    grid.className = 'bg-grid-pattern';
+    document.body.appendChild(grid);
 
-    const canvas = document.createElement('div');
-    canvas.id = 'code-bg-canvas';
-    document.body.appendChild(canvas);
+    // 2. Grain noise overlay
+    const noise = document.createElement('div');
+    noise.className = 'bg-noise-overlay';
+    document.body.appendChild(noise);
 
-    const codeTokens = [
-        'const', 'let', 'function', '=>', '<div>', '</div>', 'class', 
-        'return', 'import', 'export', '{}', '[]', '&&', '||', 'npm', 
-        'git', 'await', 'async', 'document', 'window', 'body', 'style',
-        'margin', 'padding', 'border', 'flex', 'grid'
-    ];
-
-    function createToken(initialY = null) {
-        // Prevent stacking overflow if page runs in background
-        if (canvas.childElementCount > 40) {
-            canvas.firstElementChild.remove();
-        }
-
-        const token = document.createElement('span');
-        token.className = 'floating-code-char';
-        token.innerText = codeTokens[Math.floor(Math.random() * codeTokens.length)];
+    // 3. Moveable soft blur accent blobs
+    if (!prefersReducedMotion) {
+        const blobsContainer = document.createElement('div');
+        blobsContainer.className = 'bg-blobs-container';
         
-        // Random horizontal layout
-        token.style.left = Math.random() * 95 + '%';
+        const colors = ['blue', 'purple', 'cyan'];
+        colors.forEach(c => {
+            const blob = document.createElement('div');
+            blob.className = `bg-blob blob-${c}`;
+            blobsContainer.appendChild(blob);
+        });
         
-        // Random float duration (longer is slower and more premium)
-        const duration = 12 + Math.random() * 8;
-        token.style.animationDuration = duration + 's';
-        
-        // Random sizes
-        token.style.fontSize = (0.8 + Math.random() * 0.5) + 'rem';
-        
-        if (initialY !== null) {
-            token.style.top = initialY + '%';
-            token.style.animationDelay = '-' + (Math.random() * duration) + 's';
-        }
-
-        canvas.appendChild(token);
-        
-        // Remove token once animation finishes
-        setTimeout(() => {
-            token.remove();
-        }, duration * 1000);
+        document.body.appendChild(blobsContainer);
     }
 
-    // Pre-populate 15 nodes immediately across the screen height
-    for (let i = 0; i < 15; i++) {
-        createToken(Math.random() * 90);
+    // 4. Interactive Cursor Spotlight Follower
+    if (!prefersReducedMotion) {
+        const spotlight = document.createElement('div');
+        spotlight.className = 'cursor-spotlight';
+        document.body.appendChild(spotlight);
+
+        window.addEventListener('mousemove', (e) => {
+            document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+            document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+        });
+    }
+}
+
+// Scroll Reveal Observer
+function initScrollReveal() {
+    const sections = document.querySelectorAll('.section, .case-study-hero');
+    const cards = document.querySelectorAll('.card, .deck-card, .job-card, .timeline-item');
+    const textElements = document.querySelectorAll('.section-header h2, .section-header p, h1, .hero-subtitle, .hero-description, .hero-cta, .about-content > *');
+
+    sections.forEach(s => s.classList.add('reveal'));
+    cards.forEach((c, idx) => {
+        c.classList.add('reveal');
+        // Add progressive delays to grids/timelines
+        c.classList.add(`reveal-delay-${(idx % 4) + 1}`);
+    });
+    textElements.forEach(t => t.classList.add('reveal-text'));
+
+    const revealCallback = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('reveal-active');
+                observer.unobserve(entry.target);
+            }
+        });
+    };
+
+    const revealObserver = new IntersectionObserver(revealCallback, {
+        root: null,
+        threshold: 0.08,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    const allReveals = document.querySelectorAll('.reveal, .reveal-text');
+    allReveals.forEach(el => revealObserver.observe(el));
+}
+
+// Hero Floating Particles (Particles rise up and bounce)
+function initHeroParticles() {
+    const hero = document.querySelector('.hero-wrapper');
+    if (!hero) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'hero-particles-canvas';
+    hero.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let animationId;
+
+    function resizeCanvas() {
+        canvas.width = hero.clientWidth;
+        canvas.height = hero.clientHeight;
+    }
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 0.8;
+            this.speedX = (Math.random() - 0.5) * 0.3;
+            this.speedY = -Math.random() * 0.4 - 0.08; // slow drift rise
+            this.opacity = Math.random() * 0.4 + 0.15;
+            this.fadeSpeed = Math.random() * 0.003 + 0.001;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.opacity -= this.fadeSpeed;
+
+            if (this.y < 0 || this.x < 0 || this.x > canvas.width || this.opacity <= 0) {
+                this.reset();
+                this.y = canvas.height; // Recycle from bottom
+            }
+        }
+        draw() {
+            ctx.fillStyle = `rgba(59, 130, 246, ${this.opacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.shadowColor = '#3B82F6';
+            ctx.shadowBlur = this.size * 2;
+            ctx.fill();
+        }
     }
 
-    // Spawn a new drifting node periodically
-    setInterval(() => {
-        if (document.hidden) return;
-        createToken();
-    }, 1800);
+    const particles = [];
+    const count = 35;
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        animationId = requestAnimationFrame(animate);
+    }
+
+    // Intersection observer so particles only run when hero is on screen
+    const visibilityObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animate();
+            } else {
+                cancelAnimationFrame(animationId);
+            }
+        });
+    }, { threshold: 0.05 });
+
+    visibilityObserver.observe(hero);
+}
+
+// 3D Tilt Coordinates-based Handler for Profile Image
+function initTiltEffect() {
+    const targets = document.querySelectorAll('.about-img-wrapper');
+    
+    targets.forEach(target => {
+        target.addEventListener('mousemove', (e) => {
+            const rect = target.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((centerY - y) / centerY) * 10; // Max 10 degrees tilt
+            const rotateY = ((x - centerX) / centerX) * 10;
+            
+            target.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+            
+            // Adjust glowing shadow dynamically depending on coordinates
+            target.style.boxShadow = `
+                ${-rotateY * 2.5}px ${rotateX * 2.5}px 35px -5px rgba(59, 130, 246, 0.3),
+                ${-rotateY * 1.5}px ${rotateX * 1.5}px 20px -5px rgba(139, 92, 246, 0.25),
+                0 20px 40px -10px rgba(0, 0, 0, 0.4)
+            `;
+        });
+        
+        target.addEventListener('mouseleave', () => {
+            target.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
+            target.style.boxShadow = '0 15px 35px -10px rgba(59, 130, 246, 0.25), 0 5px 15px -5px rgba(139, 92, 246, 0.2)';
+        });
+    });
 }
