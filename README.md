@@ -46,8 +46,8 @@ The website highlights:
 
 ### Frontend
 
-- HTML5
-- CSS3
+- HTML
+- CSS
 - JavaScript (ES6)
 
 ### Design
