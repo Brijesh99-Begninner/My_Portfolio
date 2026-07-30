@@ -205,8 +205,8 @@ git push origin feature-name
 Front-End Developer
 
 - GitHub: https://github.com/Brijesh99-Begninner
-- LinkedIn: *(Add your LinkedIn profile)*
-- Email: *(Add your professional email)*
+- LinkedIn: https://www.linkedin.com/in/brijesh-burrewar-b783b6298/
+- Email: BrijeshBurrewar@gmail.com
 
 ---
 
